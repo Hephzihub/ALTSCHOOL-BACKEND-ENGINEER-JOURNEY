@@ -1,0 +1,148 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+}
+
+body {
+  background-color: #f0f0f0;
+  color: #242530;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+  color: #1e1725;
+}
+
+div.calculator {
+  width: 100%;
+  max-width: 400px; /* Constrain width for larger screens */
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #1e1725;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 15px; /* Added rounded corners */
+}
+
+div.calculator input {
+  width: 100%;
+  padding: 15px;
+  font-size: 2em;
+  border: none;
+  background-color: #3a3f77;
+  color: #ffffff;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: right;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+div.calculator .buttons {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 10px;
+}
+
+div.calculator .buttons .numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+div.calculator .buttons .numbers button {
+  background-color: #404258;
+  color: white;
+}
+
+div.calculator .buttons .operators {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+div.calculator .buttons .operators .row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+div.calculator button {
+  position: relative;
+  user-select: none;
+  border-radius: 50px;
+  height: 40px;
+  font-size: 1.2em;
+  box-shadow: 0px 4px 4px 0px #00000040;
+  transition: box-shadow 0.3s ease;
+}
+
+button:hover {
+  box-shadow: 0px 4px 4px 0px #26262640;
+}
+
+div.calculator .operators .row button {
+  width: 40px;
+  background-color: #f49d1a;
+  border-radius: 100px;
+  color: white;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+div.calculator .buttons button svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+button#equals {
+  background-color: #b2b2b2;
+  color: #000;
+}
+
+div.history {
+  width: 100%;
+  max-width: 400px;
+  background-color: #ffffff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+div.history h2 {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+  color: #1e1725;
+}
+
+div.history ul {
+  list-style: none;
+  max-height: 150px; /* Limit history height */
+  overflow-y: auto; /* Scrollable history */
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+div.history ul li {
+  padding: 5px 0;
+  border-bottom: 1px dotted #eee;
+  color: #555;
+  font-size: 0.9em;
+}
+
+div.history ul li:last-child {
+  border-bottom: none;
+}
