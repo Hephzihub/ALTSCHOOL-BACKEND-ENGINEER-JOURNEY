@@ -1,2 +1,2 @@
-# ALTSCHOOL CLOUD ENGINEER JOURNEY
- This is repo shows all assignments on my Cloud Engineer Journey 
+# ALTSCHOOL BACKEND ENGINEER JOURNEY
+ This repo shows all Practice and assignments on my Backend Engineer Journey 
