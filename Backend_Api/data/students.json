@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Johnson",
+    "gender": "Female",
+    "age": 20
+  },
+  {
+    "id": 2,
+    "name": "Brian Smith",
+    "gender": "Male",
+    "age": 22
+  },
+  {
+    "id": 3,
+    "name": "Cynthia Lee",
+    "gender": "Female",
+    "age": 19
+  },
+  {
+    "id": 4,
+    "name": "David Kim",
+    "gender": "Male",
+    "age": 21
+  },
+  {
+    "id": 5,
+    "name": "Emily Brown",
+    "gender": "Female",
+    "age": 23
+  },
+  {
+    "id": 6,
+    "name": "Franklin Green",
+    "gender": "Male",
+    "age": 20
+  },
+  {
+    "id": 7,
+    "name": "Grace Miller",
+    "gender": "Female",
+    "age": 22
+  },
+  {
+    "id": 8,
+    "name": "Henry Wilson",
+    "gender": "Male",
+    "age": 19
+  },
+  {
+    "id": 9,
+    "name": "Isabella Martinez",
+    "gender": "Female",
+    "age": 21
+  },
+  {
+    "id": 10,
+    "name": "Jack Thompson",
+    "gender": "Male",
+    "age": 23
+  }
+]
