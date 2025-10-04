@@ -1,40 +1,44 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
 
 const userSchema = new Schema(
   {
     username: {
       type: String,
-      unique: true,
+      unique: [true, 'Username taken already'],
       trim: true,
       lowercase: true,
-      min: 3,
+      minlength: 3,
+      maxlength: 30,
+      required: true,
     },
-    password: { type: String, min: 6, select: false, },
+    password: { type: String, minlength: 6, select: false, required: true },
   },
   {
     timestamps: true,
   }
 );
 
-userSchema.pre('save', async (next) => {
-  if (!this.isModified('password')) {
-    return next()
+userSchema.pre("save", async function(next) {
+  if (!this.isModified("password")) {
+    return next();
   }
 
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next()
+    next();
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
+});
 
-userSchema.methods.comparePassword = async (userPassword) => {
+userSchema.methods.comparePassword = async function(userPassword) {
   try {
     return await bcrypt.compare(userPassword, this.password);
   } catch (error) {
-    throw new Error('Password compare failed')
+    throw new Error("Password compare failed");
   }
-}
+};
+
+export const UserModel = mongoose.model("user", userSchema);

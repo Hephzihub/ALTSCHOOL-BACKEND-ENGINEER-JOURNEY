@@ -364,7 +364,7 @@
       <!-- Create Task Section -->
       <div class="create-task-section">
         <h2>Create New Task</h2>
-        <form action="/tasks/create" method="POST" class="task-form">
+        <form action="/task" method="POST" class="task-form">
           <div class="form-group">
             <label for="title">Task Title *</label>
             <input
@@ -391,19 +391,19 @@
       <div class="filter-section">
         <button
           class="filter-btn <%= filter === 'all' ? 'active' : '' %>"
-          onclick="window.location.href='/tasks?filter=all'"
+          onclick="window.location.href='/task?filter=all'"
         >
           All Tasks
         </button>
         <button
           class="filter-btn <%= filter === 'pending' ? 'active' : '' %>"
-          onclick="window.location.href='/tasks?filter=pending'"
+          onclick="window.location.href='/task?filter=pending'"
         >
           Pending
         </button>
         <button
           class="filter-btn <%= filter === 'completed' ? 'active' : '' %>"
-          onclick="window.location.href='/tasks?filter=completed'"
+          onclick="window.location.href='/task?filter=completed'"
         >
           Completed
         </button>
@@ -440,7 +440,7 @@
             <div class="task-actions">
               <% if (task.status === 'pending') { %>
               <form
-                action="/tasks/<%= task._id %>/complete"
+                action="/task/updateTask/<%= task._id %>/completed"
                 method="POST"
                 style="display: inline"
               >
@@ -450,7 +450,7 @@
               </form>
               <% } else if (task.status === 'completed') { %>
               <form
-                action="/tasks/<%= task._id %>/undo"
+                action="/task/updateTask/<%= task._id %>/undo"
                 method="POST"
                 style="display: inline"
               >
@@ -460,7 +460,7 @@
               </form>
               <% } %>
               <form
-                action="/tasks/<%= task._id %>/delete"
+                action="/task/delete/<%= task._id %>"
                 method="POST"
                 style="display: inline"
               >
@@ -487,7 +487,7 @@
           const newUrl = window.location.pathname;
           window.history.replaceState({}, document.title, newUrl);
         }
-      }, 3000);
+      }, 13000);
     </script>
   </body>
 </html>
