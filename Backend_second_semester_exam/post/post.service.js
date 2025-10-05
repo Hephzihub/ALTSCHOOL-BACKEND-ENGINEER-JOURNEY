@@ -48,7 +48,7 @@ export const CreatePostService = async ({
 
   if (existingBlog) {
     return {
-      code: 400,
+      code: 409,
       message: "Title Already Exist",
       sucess: false,
     };

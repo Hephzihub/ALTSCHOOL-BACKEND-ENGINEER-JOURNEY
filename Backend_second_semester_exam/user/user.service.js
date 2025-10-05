@@ -11,7 +11,7 @@ export const registerService = async ({
   const existingUser = await UserModel.findOne({ email });
   if (existingUser) {
     return {
-      code: 404,
+      code: 409,
       message: "Email already used",
     };
   }
