@@ -4,6 +4,7 @@ import { validatedTask } from "./task.middleware.js";
 import { Authenticate } from "../auth/auth.middleware.js";
 
 const taskRouter = Router();
+
 taskRouter.use(Authenticate);
 
 taskRouter.get("/", getUserTask);

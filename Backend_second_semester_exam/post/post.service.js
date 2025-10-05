@@ -123,12 +123,6 @@ export const UpdatePostService = async ({
   });
 
   let post = await PostModel.findById(id);
-  return {
-    code: 200,
-    post,
-    id,
-    author_id,
-  };
 
   if (post.author_id.toString() !== author_id.toString()) {
     return {
