@@ -105,6 +105,7 @@ export const PublishPostService = async (_id, author_id) => {
     code: 200,
     sucess: true,
     message: "Post published successfully",
+    post
   };
 };
 
@@ -114,15 +115,20 @@ export const UpdatePostService = async ({
   tags,
   body,
   id,
-  author_id
+  author_id,
 }) => {
-
   const existingBlog = await PostModel.findOne({
     title,
     _id: { $ne: id }, // excludes the current post ID from the search
   });
 
   let post = await PostModel.findById(id);
+  return {
+    code: 200,
+    post,
+    id,
+    author_id,
+  };
 
   if (post.author_id.toString() !== author_id.toString()) {
     return {
@@ -143,7 +149,7 @@ export const UpdatePostService = async ({
   post.title = title;
   post.description = description;
   post.tags = tags;
-  post.body = body
+  post.body = body;
 
   post = await post.save();
 

@@ -131,6 +131,8 @@ export const UpdatePost = async (req, res) => {
 
   // console.log(req.user, requestBody);
 
+  // return res.json(requestBody)
+
   const response = await UpdatePostService(requestBody);
 
   return res.status(response.code).json(response);

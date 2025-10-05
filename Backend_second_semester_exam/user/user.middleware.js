@@ -72,6 +72,7 @@ export const AuthenticateUser = async (req, res, next) => {
         message: "Not Authorized",
       });
     }
+
     req.user = user;
     next();
   } catch (error) {

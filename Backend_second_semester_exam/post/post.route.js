@@ -18,7 +18,7 @@ PostRouter.get("/:id", GetSinglePost);
 
 // Authenticated Routes
 PostRouter.post("/", AuthenticateUser, validatePost, CreateSinglePost);
-PostRouter.get('/user', AuthenticateUser, GetUserPosts)
+PostRouter.get('/user/me', AuthenticateUser, GetUserPosts)
 PostRouter.patch('/:id', AuthenticateUser, validatePost, UpdatePost)
 PostRouter.patch('/:id/publish', AuthenticateUser, publishPost)
 PostRouter.delete('/:id', AuthenticateUser, DeletePost)
