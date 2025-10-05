@@ -1,4 +1,4 @@
-import express, { urlencoded, json } from 'express'
+import express, { urlencoded } from 'express'
 import authRouter from './auth/auth.route.js';
 import taskRouter from './tasks/task.route.js';
 import { config } from 'dotenv';
