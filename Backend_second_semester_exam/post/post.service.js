@@ -1,5 +1,111 @@
 import { PostModel } from "./post.model.js";
 
+const LIMIT = 20;
+
+export const GetPublishedService = async ({
+  page = 1,
+  author,
+  title,
+  tags,
+  sortBy,
+}) => {
+  // Build filter object
+  const filter = { state: "published" };
+  if (author) filter.author = new RegExp(author, "i");
+  if (title) filter.title = new RegExp(title, "i");
+  if (tags)
+    filter.tags = {
+      $in: tags.split(",").map((tag) => new RegExp(tag.trim(), "i")),
+    };
+
+  // Build sort object
+  let sort = {};
+  if (sortBy) {
+    const validSortFields = ["read_count", "reading_time", "timestamp"];
+    const [field, order] = sortBy.split(":");
+    if (validSortFields.includes(field)) {
+      sort[field] = order === "desc" ? -1 : 1;
+    }
+  }
+
+  try {
+    const posts = await PostModel.find(filter)
+      .sort(sort)
+      .limit(LIMIT * 1)
+      .skip((page - 1) * LIMIT)
+      .exec();
+
+    const count = await PostModel.countDocuments(filter);
+
+    return {
+      code: 200,
+      message: posts.length ? "Posts Retrieved" : "No Post Records",
+      success: true,
+      posts,
+      totalPages: Math.ceil(count / LIMIT),
+      currentPage: page,
+    };
+  } catch (error) {
+    return {
+      code: 500,
+      message: "Error retrieving posts",
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
+export const GetUserPostService = async (
+  { page = 1, state, title, tags, sortBy },
+  author_id
+) => {
+
+  // Build filter object
+  const filter = { author_id };
+  if (state) filter.state = state;
+  if (title) filter.title = new RegExp(title, "i");
+  if (tags)
+    filter.tags = {
+      $in: tags.split(",").map((tag) => new RegExp(tag.trim(), "i")),
+    };
+
+  // Build sort object
+  let sort = {};
+  if (sortBy) {
+    const validSortFields = ["read_count", "reading_time", "timestamp"];
+    const [field, order] = sortBy.split(":");
+    if (validSortFields.includes(field)) {
+      sort[field] = order === "desc" ? -1 : 1;
+    }
+  }
+
+  try {
+    const posts = await PostModel.find(filter)
+      .sort(sort)
+      .limit(LIMIT * 1)
+      .skip((page - 1) * LIMIT)
+      .exec();
+
+    const count = await PostModel.countDocuments(filter);
+
+    return {
+      code: 200,
+      message: posts.length ? "Posts Retrieved" : "No Post Records",
+      success: true,
+      posts,
+      totalPages: Math.ceil(count / LIMIT),
+      currentPage: page,
+    };
+  } catch (error) {
+    return {
+      code: 500,
+      message: "Error retrieving posts",
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
 export const GetSinglePostService = async (id) => {
   const post = await PostModel.findById(id).populate(
     "author_id",
@@ -105,7 +211,7 @@ export const PublishPostService = async (_id, author_id) => {
     code: 200,
     sucess: true,
     message: "Post published successfully",
-    post
+    post,
   };
 };
 
