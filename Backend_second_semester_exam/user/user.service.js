@@ -31,18 +31,20 @@ export const registerService = async ({
     };
   }
 
-  const token = encode({
+  const user = {
     _id: auth._id,
     first_name: auth.first_name,
     last_name: auth.last_name,
     email: auth.email,
-  });
+  }
+  const token = encode(user);
 
   return {
     code: 201,
     success: true,
     message: "Signup successful",
     token,
+    user
   };
 };
 
@@ -67,17 +69,19 @@ export const loginService = async ({ email, password }) => {
     };
   }
 
-  const token = encode({
+  const user = {
     _id: auth._id,
     first_name: auth.first_name,
     last_name: auth.last_name,
     email: auth.email,
-  });
+  }
+  const token = encode(user);
 
   return {
     code: 200,
     success: true,
     message: "Login successful",
     token,
+    user
   };
 };

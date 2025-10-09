@@ -12,9 +12,7 @@ class Database {
   async connect() {
     this.mongoServer = await MongoMemoryServer.create();
     const url = this.mongoServer.getUri();
-    this.connection = await mongoose.connect(url, {
-      useUnifiedTopology: true
-    });
+    this.connection = await mongoose.connect(url);
   }
 
   async disconnect() {

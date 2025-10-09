@@ -9,6 +9,8 @@ export const GetPublishedService = async ({
   tags,
   sortBy,
 }) => {
+  const currentPage = parseInt(page) || 1;
+
   const matchStage = { state: "published" };
   if (title) matchStage.title = new RegExp(title, "i");
   if (tags) {
@@ -52,7 +54,7 @@ export const GetPublishedService = async ({
     
     pipeline.push(
       { $sort: sort },
-      { $skip: (page - 1) * LIMIT },
+      { $skip: (currentPage - 1) * LIMIT },
       { $limit: LIMIT },
       {
         $project: {
@@ -85,7 +87,7 @@ export const GetPublishedService = async ({
       success: true,
       posts,
       totalPages: Math.ceil(count / LIMIT),
-      currentPage: page,
+      currentPage,
     };
   } catch (error) {
     return {
@@ -101,6 +103,8 @@ export const GetUserPostService = async (
   { page = 1, state, title, tags, sortBy },
   author_id
 ) => {
+
+  const currentPage = parseInt(page) || 1;
 
   // Build filter object
   const filter = { author_id };
@@ -127,7 +131,7 @@ export const GetUserPostService = async (
     const posts = await PostModel.find(filter)
       .sort(sort)
       .limit(LIMIT * 1)
-      .skip((page - 1) * LIMIT)
+      .skip((currentPage - 1) * LIMIT)
       .exec();
 
     const count = await PostModel.countDocuments(filter);
@@ -138,7 +142,7 @@ export const GetUserPostService = async (
       success: true,
       posts,
       totalPages: Math.ceil(count / LIMIT),
-      currentPage: page,
+      currentPage,
     };
   } catch (error) {
     return {
