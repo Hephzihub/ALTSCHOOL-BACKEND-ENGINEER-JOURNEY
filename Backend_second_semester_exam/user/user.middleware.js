@@ -29,7 +29,7 @@ export const validateLogin = (req, res, next) => {
     password: Joi.string().required(),
   });
 
-  const { data: error } = LoginSchema.validate(req.body);
+  const { error } = LoginSchema.validate(req.body);
 
   if (error) {
     return res.status(400).json({

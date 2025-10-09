@@ -9,33 +9,75 @@ export const GetPublishedService = async ({
   tags,
   sortBy,
 }) => {
-  // Build filter object
-  const filter = { state: "published" };
-  if (author) filter.author = new RegExp(author, "i");
-  if (title) filter.title = new RegExp(title, "i");
-  if (tags)
-    filter.tags = {
+  const matchStage = { state: "published" };
+  if (title) matchStage.title = new RegExp(title, "i");
+  if (tags) {
+    matchStage.tags = {
       $in: tags.split(",").map((tag) => new RegExp(tag.trim(), "i")),
     };
-
-  // Build sort object
-  let sort = {};
-  if (sortBy) {
-    const validSortFields = ["read_count", "reading_time", "timestamp"];
-    const [field, order] = sortBy.split(":");
-    if (validSortFields.includes(field)) {
-      sort[field] = order === "desc" ? -1 : 1;
-    }
   }
 
-  try {
-    const posts = await PostModel.find(filter)
-      .sort(sort)
-      .limit(LIMIT * 1)
-      .skip((page - 1) * LIMIT)
-      .exec();
+  const sortField = sortBy?.split(":")[0];
+  const sortOrder = sortBy?.split(":")[1] === "desc" ? -1 : 1;
+  const sort = ["read_count", "reading_time", "createdAt"].includes(sortField)
+    ? { [sortField]: sortOrder }
+    : { createdAt: -1 };
 
-    const count = await PostModel.countDocuments(filter);
+  try {
+    const pipeline = [
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "users",
+          localField: "author_id",
+          foreignField: "_id",
+          as: "author",
+        },
+      },
+      { $unwind: "$author" },
+    ];
+
+    if (author) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { "author.first_name": new RegExp(author, "i") },
+            { "author.last_name": new RegExp(author, "i") },
+          ],
+        },
+      });
+    }
+
+    const countPipeline = [...pipeline, { $count: "total" }];
+    
+    pipeline.push(
+      { $sort: sort },
+      { $skip: (page - 1) * LIMIT },
+      { $limit: LIMIT },
+      {
+        $project: {
+          "author.first_name": 1,
+          "author.last_name": 1,
+          "author.email": 1,
+          title: 1,
+          description: 1,
+          state: 1,
+          read_count: 1,
+          reading_time: 1,
+          tags: 1,
+          body: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      }
+    );
+
+    const [posts, countResult] = await Promise.all([
+      PostModel.aggregate(pipeline),
+      PostModel.aggregate(countPipeline),
+    ]);
+
+    const count = countResult[0]?.total || 0;
 
     return {
       code: 200,
@@ -72,11 +114,13 @@ export const GetUserPostService = async (
   // Build sort object
   let sort = {};
   if (sortBy) {
-    const validSortFields = ["read_count", "reading_time", "timestamp"];
+    const validSortFields = ["read_count", "reading_time", "createdAt"];
     const [field, order] = sortBy.split(":");
     if (validSortFields.includes(field)) {
       sort[field] = order === "desc" ? -1 : 1;
     }
+  } else {
+    sort = { createdAt: -1 };
   }
 
   try {
@@ -146,8 +190,6 @@ export const CreatePostService = async ({
   tags,
   body,
 }) => {
-  // console.log(author_id)
-
   const existingBlog = await PostModel.findOne({
     title,
   });
@@ -225,10 +267,18 @@ export const UpdatePostService = async ({
 }) => {
   const existingBlog = await PostModel.findOne({
     title,
-    _id: { $ne: id }, // excludes the current post ID from the search
+    _id: { $ne: id },
   });
 
   let post = await PostModel.findById(id);
+
+  if (!post) {
+    return {
+      code: 404,
+      message: "Post not found",
+      sucess: false,
+    };
+  }
 
   if (post.author_id.toString() !== author_id.toString()) {
     return {
