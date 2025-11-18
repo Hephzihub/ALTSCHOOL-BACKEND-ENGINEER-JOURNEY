@@ -9,6 +9,7 @@ export const getUserTask = async (req, res) => {
   // console.log(req.session);
   const userId = req.session.userId;
   const filter = req.query.filter || "all";
+  const error = req.query.error || ""; 
 
   const tasks = await TaskModel.getTasksByStatus(userId, filter);
   const stats = await TaskModel.getTaskStats(userId);
@@ -20,6 +21,7 @@ export const getUserTask = async (req, res) => {
     stats,
     tasks,
     filter,
+    error
   });
 };
 

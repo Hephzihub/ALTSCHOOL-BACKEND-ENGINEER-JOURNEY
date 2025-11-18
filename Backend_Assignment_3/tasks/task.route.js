@@ -9,7 +9,6 @@ taskRouter.use(Authenticate);
 
 taskRouter.get("/", getUserTask);
 taskRouter.post('/', validatedTask, createTask);
-// taskRouter.patch('/:id/:type', updateTaskStatus)
 taskRouter.post('/updateTask/:id/:type', updateTaskStatus)
 taskRouter.post('/delete/:id', deleteTask)
 

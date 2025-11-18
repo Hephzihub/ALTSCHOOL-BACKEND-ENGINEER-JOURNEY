@@ -1,9 +1,20 @@
 import Joi from "joi";
 import { verifyToken } from "../utils/jwt.js";
 import { UserModel } from "./user.model.js";
+import { createUploadHandler } from "../utils/uploadHandler.js";
+
+// Setup avatar upload handler
+const { uploadSingle, handleUpload } =
+  createUploadHandler("uploads/avatars/", 1); // 1MB limit
+
+export { uploadSingle };
+
+export const handleAvatarUpload = (req, res, next) => {
+  const uploadHandler = handleUpload("avatar_url", "avatars");
+  return uploadHandler(req, res, next);
+};
 
 export const validateRegister = (req, res, next) => {
-  // console.log(req.body)
   const RegisterSchema = Joi.object({
     first_name: Joi.string().required(),
     last_name: Joi.string().required(),
@@ -43,7 +54,7 @@ export const validateLogin = (req, res, next) => {
 
 export const AuthenticateUser = async (req, res, next) => {
   const bearerToken = req.headers["authorization"];
-  
+
   if (!bearerToken) {
     return res.status(401).json({
       code: 401,
@@ -62,7 +73,6 @@ export const AuthenticateUser = async (req, res, next) => {
   }
 
   try {
-    
     const decoded = verifyToken(token);
     const user = await UserModel.findById(decoded._id);
 

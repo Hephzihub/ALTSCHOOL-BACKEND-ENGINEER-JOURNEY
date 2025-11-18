@@ -6,30 +6,33 @@ const UserSchema = new Schema(
     first_name: {
       type: String,
       trim: true,
-      required: [true, 'First name is required'],
+      required: [true, "First name is required"],
       lowercase: true,
     },
     last_name: {
       type: String,
-      trim: [true, 'Last name is required'],
+      trim: [true, "Last name is required"],
       required: true,
       lowercase: true,
     },
     email: {
       type: String,
-      unique: [true, 'Email taken already'],
+      unique: [true, "Email taken already"],
       trim: true,
       lowercase: true,
       required: true,
     },
     password: { type: String, minlength: 6, select: false, required: true },
+    avatar_url: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-UserSchema.pre("save", async function(next) {
+UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
@@ -43,7 +46,7 @@ UserSchema.pre("save", async function(next) {
   }
 });
 
-UserSchema.methods.comparePassword = async function(userPassword) {
+UserSchema.methods.comparePassword = async function (userPassword) {
   try {
     return await bcrypt.compare(userPassword, this.password);
   } catch (error) {

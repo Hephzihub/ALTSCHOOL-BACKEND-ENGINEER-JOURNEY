@@ -9,7 +9,7 @@ import {
 } from "vitest";
 import supertest from "supertest";
 import app from "../app.js";
-import { connectInstance } from "./database.mjs";
+import { connectInstance } from "./database.js";
 import { UserModel } from "../user/user.model.js";
 
 describe("Auth Route", () => {
@@ -264,9 +264,6 @@ describe("Auth Route", () => {
           password: userData.password,
         })
         .expect(400);
-
-      console.log("Response status:", response.status);
-      console.log("Response body:", response.body);
 
       expect(response.body).toHaveProperty("success", false);
       expect(response.body.message).toContain("email");

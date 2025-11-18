@@ -29,6 +29,7 @@ const PostSchema = new Schema(
       type: [String],
       default: []
     },
+    image_url: {type: String, required: false},
     body: {type: String, required: [true, 'Body is required']}
   },
   {

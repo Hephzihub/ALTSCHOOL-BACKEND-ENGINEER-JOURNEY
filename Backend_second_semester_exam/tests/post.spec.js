@@ -1,16 +1,13 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from "vitest";
 import supertest from "supertest";
 import app from "../app";
-import { connectInstance } from "./database.mjs";
-import { PostModel } from "../post/post.model";
-import { UserModel } from "../user/user.model";
+import { connectInstance } from "./database.js";
 
 describe("Post Route", () => {
   let database;
   let request;
   let authToken;
   let userId;
-  let postId;
   let secondUserId;
   let secondUserToken;
 

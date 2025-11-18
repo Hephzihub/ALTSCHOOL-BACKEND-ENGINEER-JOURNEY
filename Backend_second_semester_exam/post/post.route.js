@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { validatePost } from "./post.middleware.js";
+import {
+  validatePost,
+  uploadSingle,
+  handleImageUpload,
+} from "./post.middleware.js";
 import { AuthenticateUser } from "../user/user.middleware.js";
 import {
   GetPublishedPost,
@@ -8,7 +12,7 @@ import {
   GetUserPosts,
   publishPost,
   DeletePost,
-  UpdatePost
+  UpdatePost,
 } from "./post.controller.js";
 
 const PostRouter = Router();
@@ -17,10 +21,24 @@ PostRouter.get("/", GetPublishedPost);
 PostRouter.get("/:id", GetSinglePost);
 
 // Authenticated Routes
-PostRouter.post("/", AuthenticateUser, validatePost, CreateSinglePost);
-PostRouter.get('/user/me', AuthenticateUser, GetUserPosts)
-PostRouter.patch('/:id', AuthenticateUser, validatePost, UpdatePost)
-PostRouter.patch('/:id/publish', AuthenticateUser, publishPost)
-PostRouter.delete('/:id', AuthenticateUser, DeletePost)
+PostRouter.post(
+  "/",
+  AuthenticateUser,
+  validatePost,
+  uploadSingle("image_url"),
+  handleImageUpload,
+  CreateSinglePost
+);
+PostRouter.get("/user/me", AuthenticateUser, GetUserPosts);
+PostRouter.patch(
+  "/:id",
+  AuthenticateUser,
+  validatePost,
+  uploadSingle("image_url"),
+  handleImageUpload,
+  UpdatePost
+);
+PostRouter.patch("/:id/publish", AuthenticateUser, publishPost);
+PostRouter.delete("/:id", AuthenticateUser, DeletePost);
 
 export default PostRouter;

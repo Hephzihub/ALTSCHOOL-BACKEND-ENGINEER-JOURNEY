@@ -168,16 +168,16 @@ export const GetSinglePostService = async (id) => {
     };
   }
 
-  if (post.state !== "published") {
-    return {
-      code: 403,
-      message: "Access denied",
-      sucess: false,
-    };
-  }
+  // if (post.state !== "published") {
+  //   return {
+  //     code: 403,
+  //     message: "Access denied",
+  //     sucess: false,
+  //   };
+  // }
 
-  post.read_count++;
-  await post.save();
+  // post.read_count++;
+  // await post.save();
 
   return {
     code: 200,
@@ -193,6 +193,7 @@ export const CreatePostService = async ({
   description,
   tags,
   body,
+  image_url,
 }) => {
   const existingBlog = await PostModel.findOne({
     title,
@@ -212,6 +213,7 @@ export const CreatePostService = async ({
     description,
     tags,
     body,
+    image_url,
   });
 
   if (!post) {
@@ -268,6 +270,7 @@ export const UpdatePostService = async ({
   body,
   id,
   author_id,
+  image_url,
 }) => {
   const existingBlog = await PostModel.findOne({
     title,
@@ -304,6 +307,7 @@ export const UpdatePostService = async ({
   post.description = description;
   post.tags = tags;
   post.body = body;
+  post.image_url = image_url;
 
   post = await post.save();
 
