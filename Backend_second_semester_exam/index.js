@@ -1,3 +1,4 @@
+import './config/instrument.js';
 import app from './app.js';
 import { config } from 'dotenv'
 import { connectDB } from './config/database.js'

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guessing Game</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Home Screen -->
+      <div id="home-screen" class="screen active">
+        <div class="home-screen">
+          <div class="logo">
+            <i class="fas fa-brain"></i>
+          </div>
+          <h1>Guessing Game</h1>
+          <p class="subtitle">Challenge your friends in real-time</p>
+
+          <div class="input-group">
+            <label for="username">Enter Your Name</label>
+            <input
+              type="text"
+              id="username"
+              placeholder="Your name..."
+              maxlength="20"
+            />
+          </div>
+
+          <div class="button-group">
+            <button class="btn-primary" onclick="showScreen('lobby-screen')">
+              <i class="fas fa-plus"></i>
+              Create Game
+            </button>
+            <button class="btn-secondary" onclick="showScreen('join-screen')">
+              <i class="fas fa-sign-in-alt"></i>
+              Join Game
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Join Screen -->
+      <div id="join-screen" class="screen">
+        <button class="back-button" onclick="showScreen('home-screen')">
+          <i class="fas fa-arrow-left"></i>
+          Back
+        </button>
+
+        <div class="home-screen">
+          <div class="logo">
+            <i class="fas fa-door-open"></i>
+          </div>
+          <h1>Join Game</h1>
+          <p class="subtitle">Enter the session code to join</p>
+
+          <div class="input-group">
+            <label for="session-code">Session Code</label>
+            <input
+              type="text"
+              id="session-code"
+              placeholder="Enter code..."
+              maxlength="6"
+            />
+          </div>
+
+          <button
+            class="btn-primary"
+            onclick="showScreen('lobby-screen')"
+            style="width: 100%"
+          >
+            <i class="fas fa-sign-in-alt"></i>
+            Join Session
+          </button>
+        </div>
+      </div>
+
+      <!-- Lobby Screen -->
+      <div id="lobby-screen" class="screen">
+        <div class="lobby-header">
+          <h2>Game Lobby</h2>
+          <div class="session-code">
+            <span>Session Code:</span>
+            <span class="code-display">ABC123</span>
+            <button class="copy-btn" title="Copy code">
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+          <div class="role-badge master">
+            <i class="fas fa-crown"></i>
+            Game Master
+          </div>
+        </div>
+
+        <div class="lobby-content">
+          <div class="players-section">
+            <h3 class="section-title">
+              <i class="fas fa-users"></i>
+              Players (3)
+            </h3>
+            <ul class="player-list">
+              <li class="player-item">
+                <div class="player-icon">
+                  <i class="fas fa-crown crown"></i>
+                </div>
+                <span>John (You)</span>
+              </li>
+              <li class="player-item">
+                <div class="player-icon">
+                  <i class="fas fa-user"></i>
+                </div>
+                <span>Sarah</span>
+              </li>
+              <li class="player-item">
+                <div class="player-icon">
+                  <i class="fas fa-user"></i>
+                </div>
+                <span>Mike</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="game-setup">
+            <h3 class="section-title">
+              <i class="fas fa-cog"></i>
+              Game Setup
+            </h3>
+
+            <!-- Game Master View -->
+            <div class="input-group">
+              <label for="question">Question</label>
+              <textarea
+                id="question"
+                placeholder="Enter your question..."
+              ></textarea>
+            </div>
+
+            <div class="input-group">
+              <label for="answer">Answer</label>
+              <input
+                type="text"
+                id="answer"
+                placeholder="Enter the correct answer..."
+              />
+            </div>
+
+            <button
+              class="btn-success"
+              onclick="showScreen('game-screen')"
+              style="width: 100%"
+            >
+              <i class="fas fa-play"></i>
+              Start Game
+            </button>
+
+            <!-- Player View (Hidden by default, show when not game master) -->
+            <!-- <div class="waiting-message" style="display: none;">
+                        <i class="fas fa-hourglass-half"></i>
+                        <p>Waiting for game master to start the game...</p>
+                    </div> -->
+          </div>
+        </div>
+
+        <button
+          class="btn-danger"
+          style="width: 100%; margin-top: 2rem"
+          onclick="showScreen('home-screen')"
+        >
+          <i class="fas fa-sign-out-alt"></i>
+          Leave Session
+        </button>
+      </div>
+
+      <!-- Game Screen -->
+      <div id="game-screen" class="screen">
+        <div class="game-header">
+          <div class="timer">
+            <i class="fas fa-clock timer-icon"></i>
+            <span id="timer-display">60</span>
+          </div>
+          <div class="attempts">
+            <span>Attempts:</span>
+            <div class="attempt-dot"></div>
+            <div class="attempt-dot"></div>
+            <div class="attempt-dot used"></div>
+          </div>
+        </div>
+
+        <div class="question-card">
+          <h3 class="question-text">What is the capital of France?</h3>
+
+          <div class="feedback-message error show">
+            <i class="fas fa-times-circle"></i>
+            Wrong answer! 2 attempts remaining.
+          </div>
+
+          <div class="answer-form">
+            <input
+              type="text"
+              class="answer-input"
+              placeholder="Type your answer..."
+            />
+            <button class="btn-primary">
+              <i class="fas fa-paper-plane"></i>
+              Submit
+            </button>
+          </div>
+        </div>
+
+        <div class="game-content">
+          <div class="activity-feed">
+            <h3 class="section-title">
+              <i class="fas fa-list"></i>
+              Activity Feed
+            </h3>
+            <div class="activity-item">
+              <i class="fas fa-play-circle"></i>
+              Game started!
+            </div>
+            <div class="activity-item">
+              <i class="fas fa-paper-plane"></i>
+              Sarah submitted an answer
+            </div>
+            <div class="activity-item">
+              <i class="fas fa-times"></i>
+              Mike has 1 attempt remaining
+            </div>
+            <div class="activity-item">
+              <i class="fas fa-clock"></i>
+              30 seconds remaining
+            </div>
+          </div>
+
+          <div class="scoreboard">
+            <h3 class="section-title">
+              <i class="fas fa-trophy"></i>
+              Scoreboard
+            </h3>
+            <div class="score-item">
+              <span>John</span>
+              <span class="score-value">30</span>
+            </div>
+            <div class="score-item">
+              <span>Sarah</span>
+              <span class="score-value">20</span>
+            </div>
+            <div class="score-item">
+              <span>Mike</span>
+              <span class="score-value">10</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Screen -->
+      <div id="results-screen" class="screen">
+        <div class="results-screen">
+          <!-- Winner Scenario -->
+          <div class="result-icon winner">
+            <i class="fas fa-trophy"></i>
+          </div>
+          <h2 class="result-title">Sarah Wins!</h2>
+          <p class="result-message">Congratulations! +10 points</p>
+
+          <!-- Timeout Scenario (Alternative - comment out winner and uncomment this) -->
+          <!-- <div class="result-icon timeout">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h2 class="result-title">Time's Up!</h2>
+                <p class="result-message">No winner this round</p> -->
+
+          <div class="answer-reveal">
+            <div class="answer-label">Correct Answer:</div>
+            <div class="answer-text">Paris</div>
+          </div>
+
+          <div class="final-scoreboard">
+            <h3 class="section-title">
+              <i class="fas fa-chart-bar"></i>
+              Final Scores
+            </h3>
+            <div class="score-item">
+              <span>Sarah</span>
+              <span class="score-value">30</span>
+            </div>
+            <div class="score-item">
+              <span>John</span>
+              <span class="score-value">30</span>
+            </div>
+            <div class="score-item">
+              <span>Mike</span>
+              <span class="score-value">10</span>
+            </div>
+          </div>
+
+          <div class="next-round">
+            <i class="fas fa-crown"></i>
+            <p><strong>Next Game Master:</strong> Mike</p>
+            <p style="color: #94a3b8; margin-top: 0.5rem">
+              Starting next round in 5 seconds...
+            </p>
+          </div>
+
+          <div class="button-group">
+            <button class="btn-primary" onclick="showScreen('lobby-screen')">
+              <i class="fas fa-redo"></i>
+              Continue
+            </button>
+            <button class="btn-danger" onclick="showScreen('home-screen')">
+              <i class="fas fa-sign-out-alt"></i>
+              Leave Session
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js" ></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js">
+      let socket = io();
+    </script>
+  </body>
+</html>
