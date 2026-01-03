@@ -3,6 +3,20 @@
 class SessionManager {
   constructor() {
     this.sessions = new Map();
+    // Session structure:
+    /**
+     * {
+     * sessionId: string,
+     * state: 'waiting' | 'in-progress' | 'ended',
+     * players: [ { socketId, username, score, role, attempts, isActive } ],
+     * question: string | null,
+     * answer: string | null,
+     * timer: Timeout | null,
+     * createdAt: timestamp,
+     * currentRound: number,
+     * chatEnabled: boolean
+     * }
+     */
   }
 
   /**
@@ -17,7 +31,7 @@ class SessionManager {
       for (let i = 0; i < 6; i++) {
         code += characters.charAt(Math.floor(Math.random() * characters.length));
       }
-    } while (this.sessions.has(code)); // Ensure uniqueness
+    } while (this.sessions.has(code));
     
     return code;
   }
@@ -32,7 +46,7 @@ class SessionManager {
     
     const session = {
       sessionId,
-      state: 'waiting', // 'waiting', 'in-progress', 'ended'
+      state: 'waiting',
       players: [
         {
           socketId: gameMaster.socketId,
@@ -47,7 +61,8 @@ class SessionManager {
       answer: null,
       timer: null,
       createdAt: Date.now(),
-      currentRound: 0
+      currentRound: 0,
+      chatEnabled: true // Chat enabled by default
     };
 
     this.sessions.set(sessionId, session);
@@ -104,7 +119,7 @@ class SessionManager {
    * Remove a player from a session
    * @param {string} sessionId
    * @param {string} socketId
-   * @returns {Object|null} { session, wasGameMaster, newGameMaster, shouldDelete }
+   * @returns {Object|null} { session, wasGameMaster, newGameMaster, shouldDelete, removedPlayer }
    */
   removePlayer(sessionId, socketId) {
     const session = this.sessions.get(sessionId);
@@ -128,7 +143,7 @@ class SessionManager {
     // If no players left, mark for deletion
     if (session.players.length === 0) {
       this.deleteSession(sessionId);
-      return { session: null, wasGameMaster, newGameMaster: null, shouldDelete: true };
+      return { session: null, wasGameMaster, newGameMaster: null, shouldDelete: true, removedPlayer };
     }
 
     // If game master left, assign new one
@@ -139,7 +154,7 @@ class SessionManager {
       console.log(`[SESSION] ${newGameMaster.username} is now game master of ${sessionId}`);
     }
 
-    return { session, wasGameMaster, newGameMaster, shouldDelete: false };
+    return { session, wasGameMaster, newGameMaster, shouldDelete: false, removedPlayer };
   }
 
   /**
@@ -228,13 +243,16 @@ class SessionManager {
       return { success: false, error: 'Game already in progress' };
     }
 
-    // Reset all player attempts
+    // Reset all player attempts (only for non-game master)
     session.players.forEach(player => {
-      player.attempts = 3; // revisit this later
+      if (player.role !== 'master') {
+        player.attempts = 3;
+      }
     });
 
     session.state = 'in-progress';
     session.currentRound++;
+    session.chatEnabled = false; // Disable regular chat during game
     console.log(`[SESSION] Game started in session ${sessionId}`);
     
     return { success: true, session };
@@ -266,18 +284,19 @@ class SessionManager {
         winner.score += 10;
         console.log(`[SESSION] ${winner.username} won round ${session.currentRound} in ${sessionId}`);
       }
-      session.state = 'ended';
     } else {
       console.log(`[SESSION] Round ${session.currentRound} in ${sessionId} ended with no winner`);
-      session.state = 'waiting';
     }
 
+    // Always return to waiting state and enable chat after game ends
+    session.state = 'waiting';
+    session.chatEnabled = true;
     
     return { session, result };
   }
 
   /**
-   * Rotate game master to next player
+   * Set new game master (winner becomes new master)
    * @param {string} sessionId
    * @param {string} winnerSocketId
    * @returns {Object|null} New game master
@@ -305,8 +324,7 @@ class SessionManager {
 
     newMaster.role = 'master';
 
-    // Reset session for next round
-    session.state = 'waiting';
+    // Reset question/answer for next round
     session.question = null;
     session.answer = null;
 
@@ -366,6 +384,16 @@ class SessionManager {
   }
 
   /**
+   * Check if chat is enabled for session
+   * @param {string} sessionId
+   * @returns {boolean}
+   */
+  isChatEnabled(sessionId) {
+    const session = this.sessions.get(sessionId);
+    return session ? session.chatEnabled : false;
+  }
+
+  /**
    * Get all active sessions count
    * @returns {number}
    */
@@ -391,6 +419,7 @@ class SessionManager {
       state: session.state,
       currentRound: session.currentRound,
       hasQuestion: !!session.question,
+      chatEnabled: session.chatEnabled,
       uptime: Date.now() - session.createdAt
     };
   }

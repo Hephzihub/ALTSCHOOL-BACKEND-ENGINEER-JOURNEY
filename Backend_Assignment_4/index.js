@@ -42,8 +42,17 @@ io.on("connection", (socket) => {
         sessionId: session.sessionId,
         players: session.players,
         state: session.state,
-        yourRole: 'master'
+        yourRole: 'master',
+        chatEnabled: session.chatEnabled,
+        currentRound: session.currentRound
       }
+    });
+
+    // Send system message
+    io.to(session.sessionId).emit("system-message", {
+      type: 'system',
+      content: `${username} created the session`,
+      timestamp: Date.now()
     });
 
     console.log(`[GAME] ${username} created session ${session.sessionId}`);
@@ -85,18 +94,67 @@ io.on("connection", (socket) => {
         sessionId: session.sessionId,
         players: session.players,
         state: session.state,
-        yourRole: 'player'
+        yourRole: 'player',
+        chatEnabled: session.chatEnabled,
+        currentRound: session.currentRound
       }
     });
 
-    // Notify all other players in the session
-    socket.to(sessionId).emit("player-joined", {
+    // Notify all players in the session
+    io.to(sessionId).emit("player-joined", {
       player: session.players[session.players.length - 1],
       playerCount: session.players.length,
       players: session.players
     });
 
+    // Send system message to all
+    io.to(sessionId).emit("system-message", {
+      type: 'system',
+      content: `${username} joined the session`,
+      timestamp: Date.now()
+    });
+
     console.log(`[GAME] ${username} joined session ${sessionId}`);
+  });
+
+  // Send chat message
+  socket.on("send-message", (data) => {
+    const { sessionId, message } = data;
+
+    const session = sessionManager.getSession(sessionId);
+
+    if (!session) {
+      socket.emit("error", { message: "Session not found" });
+      return;
+    }
+
+    // Check if chat is enabled (no regular chat during game, allow for game master)
+    if (!session.chatEnabled && !sessionManager.isGameMaster(sessionId, socket.id)) {
+      socket.emit("error", { message: "Chat is disabled during the game" });
+      return;
+    }
+
+    const player = sessionManager.getPlayer(sessionId, socket.id);
+
+    if (!player) {
+      socket.emit("error", { message: "Player not found" });
+      return;
+    }
+
+    if (!message || message.trim() === "") {
+      return;
+    }
+
+    // Broadcast message to all players
+    io.to(sessionId).emit("chat-message", {
+      type: 'chat',
+      username: player.username,
+      content: message.trim(),
+      timestamp: Date.now(),
+      socketId: socket.id
+    });
+
+    console.log(`[CHAT] ${player.username}: ${message}`);
   });
 
   // Game master creates question
@@ -116,7 +174,18 @@ io.on("connection", (socket) => {
     const success = sessionManager.setQuestion(sessionId, question, answer);
 
     if (success) {
-      socket.emit("question-created", { success: true });
+      const player = sessionManager.getPlayer(sessionId, socket.id);
+      
+      // Notify game master
+      socket.emit("question-created", { question, answer });
+      
+      // Send system message to all (without revealing answer)
+      io.to(sessionId).emit("system-message", {
+        type: 'system',
+        content: `${player.username} set a question. Ready to start!`,
+        timestamp: Date.now()
+      });
+
       console.log(`[GAME] Question set for session ${sessionId}`);
     } else {
       socket.emit("error", { message: "Failed to create question" });
@@ -142,7 +211,7 @@ io.on("connection", (socket) => {
     const session = result.session;
 
     // Start 60-second timer
-    const timerDuration = 60000; // 60 seconds
+    const timerDuration = 60000;
     session.timer = setTimeout(() => {
       handleGameTimeout(sessionId);
     }, timerDuration);
@@ -151,7 +220,15 @@ io.on("connection", (socket) => {
     io.to(sessionId).emit("game-started", {
       question: session.question,
       duration: 60,
-      players: session.players
+      players: session.players,
+      chatEnabled: session.chatEnabled
+    });
+
+    // Send system message
+    io.to(sessionId).emit("system-message", {
+      type: 'game-start',
+      content: `Game started! You have 60 seconds to answer.`,
+      timestamp: Date.now()
     });
 
     console.log(`[GAME] Session ${sessionId} started`);
@@ -180,6 +257,11 @@ io.on("connection", (socket) => {
       return;
     }
 
+    if (player.role === 'master') {
+      socket.emit("error", { message: "Game master cannot submit answers" });
+      return;
+    }
+
     if (player.attempts <= 0) {
       socket.emit("error", { message: "No attempts remaining" });
       return;
@@ -195,6 +277,13 @@ io.on("connection", (socket) => {
         reason: 'correct'
       });
 
+      // Send system message about winner
+      io.to(sessionId).emit("system-message", {
+        type: 'winner',
+        content: `${player.username} got it right! +10 points`,
+        timestamp: Date.now()
+      });
+
       // Notify all players
       io.to(sessionId).emit("game-ended", {
         result: 'winner',
@@ -204,26 +293,30 @@ io.on("connection", (socket) => {
           score: player.score
         },
         correctAnswer: session.answer,
-        players: session.players
+        players: session.players,
+        chatEnabled: session.chatEnabled
       });
 
       console.log(`[GAME] ${player.username} won in session ${sessionId}`);
 
-      // Set winneer as new game master after delay
+      // Set winner as new game master after delay
       setTimeout(() => {
-        const newMaster = sessionManager.setNewMaster(sessionId, sessionId);
+        const newMaster = sessionManager.setNewMaster(sessionId, socket.id);
         
         if (newMaster) {
           io.to(sessionId).emit("new-game-master", {
-            gamemaster: newMaster,
-            message: `${newMaster.username} is the new game master!`
+            gameMaster: newMaster,
+            players: session.players
           });
 
-          io.to(sessionId).emit("return-to-lobby", {
-            session: sessionManager.getSession(sessionId)
+          // Send system message
+          io.to(sessionId).emit("system-message", {
+            type: 'system',
+            content: `${newMaster.username} is now the game master!`,
+            timestamp: Date.now()
           });
         }
-      }, 5000); // 5 second delay
+      }, 3000); // 3 second delay
 
     } else {
       // Wrong answer
@@ -231,13 +324,14 @@ io.on("connection", (socket) => {
 
       socket.emit("wrong-answer", {
         remainingAttempts,
-        message: `Wrong answer! ${remainingAttempts} attempts remaining.`
+        message: `Wrong answer! ${remainingAttempts} attempt(s) remaining.`
       });
 
-      // Notify other players
-      socket.to(sessionId).emit("player-attempted", {
-        username: player.username,
-        attemptsRemaining: remainingAttempts
+      // Notify all players via system message
+      io.to(sessionId).emit("system-message", {
+        type: 'attempt',
+        content: `${player.username} answered incorrectly (${remainingAttempts} attempt(s) left)`,
+        timestamp: Date.now()
       });
 
       console.log(`[GAME] ${player.username} wrong answer, ${remainingAttempts} attempts left`);
@@ -247,6 +341,7 @@ io.on("connection", (socket) => {
   // Player leaves session
   socket.on("leave-session", (data) => {
     const { sessionId } = data;
+    console.log(`[GAME] Player ${socket.id} leaving session ${sessionId}`);
     handlePlayerLeave(socket, sessionId);
   });
 
@@ -270,7 +365,11 @@ io.on("connection", (socket) => {
     const session = sessionManager.getSession(sessionId);
 
     if (session) {
-      socket.emit("session-state", { session });
+      const player = sessionManager.getPlayer(sessionId, socket.id);
+      socket.emit("session-state", { 
+        session,
+        yourRole: player ? player.role : null
+      });
     } else {
       socket.emit("error", { message: "Session not found" });
     }
@@ -290,32 +389,24 @@ function handleGameTimeout(sessionId) {
     reason: 'timeout'
   });
 
+  // Send system message
+  io.to(sessionId).emit("system-message", {
+    type: 'timeout',
+    content: `Time's up! The answer was: ${session.answer}`,
+    timestamp: Date.now()
+  });
+
   // Notify all players
   io.to(sessionId).emit("game-ended", {
     result: 'timeout',
     winner: null,
     correctAnswer: session.answer,
     message: "Time's up! No winner this round.",
-    players: session.players
+    players: session.players,
+    chatEnabled: session.chatEnabled
   });
 
   console.log(`[GAME] Session ${sessionId} timed out`);
-
-  // Schedule game master rotation
-  // setTimeout(() => {
-  //   const newMaster = sessionManager.rotateGameMaster(sessionId);
-    
-  //   if (newMaster) {
-  //     io.to(sessionId).emit("new-game-master", {
-  //       gamemaster: newMaster,
-  //       message: `${newMaster.username} is the new game master!`
-  //     });
-
-  //     io.to(sessionId).emit("return-to-lobby", {
-  //       session: sessionManager.getSession(sessionId)
-  //     });
-  //   }
-  // }, 5000);
 }
 
 // Helper function to handle player leaving
@@ -333,6 +424,13 @@ function handlePlayerLeave(socket, sessionId) {
     return;
   }
 
+  // Send system message
+  io.to(sessionId).emit("system-message", {
+    type: 'system',
+    content: `${result.removedPlayer.username} left the session`,
+    timestamp: Date.now()
+  });
+
   // Notify remaining players
   socket.to(sessionId).emit("player-left", {
     socketId: socket.id,
@@ -343,8 +441,15 @@ function handlePlayerLeave(socket, sessionId) {
   // If game master left, notify about new game master
   if (result.newGameMaster) {
     io.to(sessionId).emit("new-game-master", {
-      gamemaster: result.newGameMaster,
-      message: `${result.newGameMaster.username} is now the game master!`
+      gameMaster: result.newGameMaster,
+      players: result.session.players
+    });
+
+    // Send system message
+    io.to(sessionId).emit("system-message", {
+      type: 'system',
+      content: `${result.newGameMaster.username} is now the game master!`,
+      timestamp: Date.now()
     });
   }
 }

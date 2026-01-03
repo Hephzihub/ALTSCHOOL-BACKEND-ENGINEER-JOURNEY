@@ -22,17 +22,17 @@
           <p class="subtitle">Challenge your friends in real-time</p>
 
           <div class="input-group">
-            <label for="username">Enter Your Name</label>
+            <label for="creator-username">Enter Your Name</label>
             <input
               type="text"
-              id="username"
+              id="creator-username"
               placeholder="Your name..."
               maxlength="20"
             />
           </div>
 
           <div class="button-group">
-            <button class="btn-primary" onclick="showScreen('lobby-screen')">
+            <button class="btn-primary" id="create-game-btn">
               <i class="fas fa-plus"></i>
               Create Game
             </button>
@@ -59,6 +59,16 @@
           <p class="subtitle">Enter the session code to join</p>
 
           <div class="input-group">
+            <label for="username">Enter Your Name</label>
+            <input
+              type="text"
+              id="username"
+              placeholder="Your name..."
+              maxlength="20"
+            />
+          </div>
+
+          <div class="input-group">
             <label for="session-code">Session Code</label>
             <input
               type="text"
@@ -68,260 +78,170 @@
             />
           </div>
 
-          <button
-            class="btn-primary"
-            onclick="showScreen('lobby-screen')"
-            style="width: 100%"
-          >
+          <button class="btn-primary" id="join-game-btn" style="width: 100%">
             <i class="fas fa-sign-in-alt"></i>
             Join Session
           </button>
         </div>
       </div>
 
-      <!-- Lobby Screen -->
-      <div id="lobby-screen" class="screen">
-        <div class="lobby-header">
-          <h2>Game Lobby</h2>
-          <div class="session-code">
-            <span>Session Code:</span>
-            <span class="code-display">ABC123</span>
-            <button class="copy-btn" title="Copy code">
+      <!-- Chat/Game Screen -->
+      <div id="chat-screen" class="screen">
+        <!-- Chat Header -->
+        <div class="chat-header">
+          <div class="session-info">
+            <h3>Session: <span id="chat-session-code"></span></h3>
+            <button class="copy-code-btn" title="Copy code">
               <i class="fas fa-copy"></i>
             </button>
           </div>
-          <div class="role-badge master">
-            <i class="fas fa-crown"></i>
-            Game Master
-          </div>
-        </div>
 
-        <div class="lobby-content">
-          <div class="players-section">
-            <h3 class="section-title">
-              <i class="fas fa-users"></i>
-              Players (3)
-            </h3>
-            <ul class="player-list">
-              <li class="player-item">
-                <div class="player-icon">
-                  <i class="fas fa-crown crown"></i>
-                </div>
-                <span>John (You)</span>
-              </li>
-              <li class="player-item">
-                <div class="player-icon">
-                  <i class="fas fa-user"></i>
-                </div>
-                <span>Sarah</span>
-              </li>
-              <li class="player-item">
-                <div class="player-icon">
-                  <i class="fas fa-user"></i>
-                </div>
-                <span>Mike</span>
-              </li>
-            </ul>
-          </div>
-
-          <div class="game-setup">
-            <h3 class="section-title">
-              <i class="fas fa-cog"></i>
-              Game Setup
-            </h3>
-
-            <!-- Game Master View -->
-            <div class="input-group">
-              <label for="question">Question</label>
-              <textarea
-                id="question"
-                placeholder="Enter your question..."
-              ></textarea>
-            </div>
-
-            <div class="input-group">
-              <label for="answer">Answer</label>
-              <input
-                type="text"
-                id="answer"
-                placeholder="Enter the correct answer..."
-              />
-            </div>
-
-            <button
-              class="btn-success"
-              onclick="showScreen('game-screen')"
-              style="width: 100%"
-            >
-              <i class="fas fa-play"></i>
-              Start Game
-            </button>
-
-            <!-- Player View (Hidden by default, show when not game master) -->
-            <!-- <div class="waiting-message" style="display: none;">
-                        <i class="fas fa-hourglass-half"></i>
-                        <p>Waiting for game master to start the game...</p>
-                    </div> -->
-          </div>
-        </div>
-
-        <button
-          class="btn-danger"
-          style="width: 100%; margin-top: 2rem"
-          onclick="showScreen('home-screen')"
-        >
-          <i class="fas fa-sign-out-alt"></i>
-          Leave Session
-        </button>
-      </div>
-
-      <!-- Game Screen -->
-      <div id="game-screen" class="screen">
-        <div class="game-header">
-          <div class="timer">
-            <i class="fas fa-clock timer-icon"></i>
-            <span id="timer-display">60</span>
-          </div>
-          <div class="attempts">
-            <span>Attempts:</span>
-            <div class="attempt-dot"></div>
-            <div class="attempt-dot"></div>
-            <div class="attempt-dot used"></div>
-          </div>
-        </div>
-
-        <div class="question-card">
-          <h3 class="question-text">What is the capital of France?</h3>
-
-          <div class="feedback-message error show">
-            <i class="fas fa-times-circle"></i>
-            Wrong answer! 2 attempts remaining.
-          </div>
-
-          <div class="answer-form">
-            <input
-              type="text"
-              class="answer-input"
-              placeholder="Type your answer..."
-            />
-            <button class="btn-primary">
-              <i class="fas fa-paper-plane"></i>
-              Submit
-            </button>
-          </div>
-        </div>
-
-        <div class="game-content">
-          <div class="activity-feed">
-            <h3 class="section-title">
-              <i class="fas fa-list"></i>
-              Activity Feed
-            </h3>
-            <div class="activity-item">
-              <i class="fas fa-play-circle"></i>
-              Game started!
-            </div>
-            <div class="activity-item">
-              <i class="fas fa-paper-plane"></i>
-              Sarah submitted an answer
-            </div>
-            <div class="activity-item">
-              <i class="fas fa-times"></i>
-              Mike has 1 attempt remaining
-            </div>
-            <div class="activity-item">
+          <div class="game-status">
+            <!-- Timer (only visible during game) -->
+            <div class="timer" id="game-timer" style="display: none">
               <i class="fas fa-clock"></i>
-              30 seconds remaining
+              <span id="timer-display">60</span>
             </div>
-          </div>
 
-          <div class="scoreboard">
-            <h3 class="section-title">
-              <i class="fas fa-trophy"></i>
-              Scoreboard
-            </h3>
-            <div class="score-item">
-              <span>John</span>
-              <span class="score-value">30</span>
-            </div>
-            <div class="score-item">
-              <span>Sarah</span>
-              <span class="score-value">20</span>
-            </div>
-            <div class="score-item">
-              <span>Mike</span>
-              <span class="score-value">10</span>
+            <!-- Players count -->
+            <div class="players-count">
+              <i class="fas fa-users"></i>
+              <span id="header-player-count">1</span>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Results Screen -->
-      <div id="results-screen" class="screen">
-        <div class="results-screen">
-          <!-- Winner Scenario -->
-          <div class="result-icon winner">
-            <i class="fas fa-trophy"></i>
-          </div>
-          <h2 class="result-title">Sarah Wins!</h2>
-          <p class="result-message">Congratulations! +10 points</p>
-
-          <!-- Timeout Scenario (Alternative - comment out winner and uncomment this) -->
-          <!-- <div class="result-icon timeout">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h2 class="result-title">Time's Up!</h2>
-                <p class="result-message">No winner this round</p> -->
-
-          <div class="answer-reveal">
-            <div class="answer-label">Correct Answer:</div>
-            <div class="answer-text">Paris</div>
-          </div>
-
-          <div class="final-scoreboard">
-            <h3 class="section-title">
-              <i class="fas fa-chart-bar"></i>
-              Final Scores
-            </h3>
-            <div class="score-item">
-              <span>Sarah</span>
-              <span class="score-value">30</span>
+        <!-- Main Chat Area -->
+        <div class="chat-container">
+          <!-- Sidebar -->
+          <div class="chat-sidebar">
+            <!-- Players List -->
+            <div class="sidebar-section">
+              <h4 class="sidebar-title">
+                <i class="fas fa-users"></i> Players
+              </h4>
+              <div id="players-list" class="players-list">
+                <!-- Players will be added dynamically -->
+              </div>
             </div>
-            <div class="score-item">
-              <span>John</span>
-              <span class="score-value">30</span>
-            </div>
-            <div class="score-item">
-              <span>Mike</span>
-              <span class="score-value">10</span>
-            </div>
-          </div>
 
-          <div class="next-round">
-            <i class="fas fa-crown"></i>
-            <p><strong>Next Game Master:</strong> Mike</p>
-            <p style="color: #94a3b8; margin-top: 0.5rem">
-              Starting next round in 5 seconds...
-            </p>
-          </div>
+            <!-- Scoreboard -->
+            <div class="sidebar-section">
+              <h4 class="sidebar-title">
+                <i class="fas fa-trophy"></i> Scoreboard
+              </h4>
+              <div id="scoreboard" class="scoreboard-list">
+                <!-- Scores will be added dynamically -->
+              </div>
+            </div>
 
-          <div class="button-group">
-            <button class="btn-primary" onclick="showScreen('lobby-screen')">
-              <i class="fas fa-redo"></i>
-              Continue
-            </button>
-            <button class="btn-danger" onclick="showScreen('home-screen')">
+            <!-- Leave Button -->
+            <button class="btn-danger leave-btn" onclick="leaveSession()">
               <i class="fas fa-sign-out-alt"></i>
-              Leave Session
+              Leave
             </button>
+          </div>
+
+          <!-- Chat Messages Area -->
+          <div class="chat-main">
+            <!-- Question Banner (only visible during game) -->
+            <div
+              class="question-banner"
+              id="question-banner"
+              style="display: none"
+            >
+              <div class="question-label">Question:</div>
+              <div class="question-text" id="active-question"></div>
+              <div class="attempts-display" id="attempts-display">
+                <!-- Dynamic hearts will be added here -->
+              </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="messages-container" id="messages-container">
+              <!-- Messages will be added dynamically -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-area">
+              <!-- Game Master Question Input -->
+              <div
+                class="input-wrapper question-input-wrapper"
+                id="question-input-form"
+                style="display: none"
+              >
+                <div class="question-form">
+                  <input
+                    type="text"
+                    id="question-input"
+                    class="chat-input"
+                    placeholder="Enter question..."
+                  />
+                  <input
+                    type="text"
+                    id="answer-input"
+                    class="chat-input"
+                    placeholder="Enter answer..."
+                  />
+                  <div class="question-actions">
+                    <button class="btn-success" onclick="setQuestion()">
+                      <i class="fas fa-check"></i> Set Question
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Start Game Button (for GM after question is set) -->
+              <div
+                class="input-wrapper"
+                id="start-game-wrapper"
+                style="display: none"
+              >
+                <button
+                  class="btn-primary start-game-btn"
+                  onclick="startGame()"
+                >
+                  <i class="fas fa-play-circle"></i> Start Game
+                </button>
+              </div>
+
+              <!-- Normal Chat Input (default) -->
+              <div class="input-wrapper" id="normal-chat-input">
+                <input
+                  type="text"
+                  id="chat-message-input"
+                  class="chat-input"
+                  placeholder="Type a message..."
+                  disabled
+                />
+                <button class="send-btn" onclick="sendMessage()" disabled>
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+
+              <!-- Answer Input (during game for players) -->
+              <div
+                class="input-wrapper"
+                id="answer-submit-input"
+                style="display: none"
+              >
+                <input
+                  type="text"
+                  id="answer-submit-field"
+                  class="chat-input"
+                  placeholder="Type your answer..."
+                />
+                <button class="send-btn" onclick="submitAnswer()">
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <script src="script.js" ></script>
-    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js">
-      let socket = io();
-    </script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>
