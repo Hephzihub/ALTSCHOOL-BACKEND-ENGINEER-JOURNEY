@@ -3,12 +3,10 @@ import { config } from "dotenv";
 
 config();
 
-const DB_URL = process.env.DB_URL;
-
-console.log("Database URL:", DB_URL);
+const MONGO_URI = process.env.MONGO_URI;
 
 export const connectDB = () => {
-  mongoose.connect(DB_URL).then(
+  mongoose.connect(MONGO_URI).then(
     () => console.log("Database Connected"),
     () => console.log("Error Connecting to Database")
   );
